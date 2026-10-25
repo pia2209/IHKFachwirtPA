@@ -30,17 +30,26 @@ struct SettingsView: View {
                 Button("Apple-Anmeldung trennen", role: .destructive) { settings.signOutApple() }
             } else {
                 SignInWithAppleButton(.signIn) { request in
-                    request.requestedScopes = [.fullName, .email]
+                    request.requestedScopes = [.fullName]
                 } onCompletion: { result in
                     settings.handleAppleAuthorization(result)
-                    if settings.isSignedInWithApple {
-                        statusMessage = "Apple-Anmeldung gespeichert."
+                    switch result {
+                    case .success:
+                        statusMessage = settings.isSignedInWithApple
+                            ? "Apple-Anmeldung wurde auf diesem Gerät gespeichert."
+                            : "Die Anmeldung konnte nicht gespeichert werden."
+                    case .failure(let error):
+                        let nsError = error as NSError
+                        if nsError.domain == ASAuthorizationErrorDomain && nsError.code == ASAuthorizationError.canceled.rawValue {
+                            return
+                        }
+                        statusMessage = "Die Apple-Anmeldung konnte nicht abgeschlossen werden."
                     }
                 }
                 .signInWithAppleButtonStyle(.black)
                 .frame(height: 46)
             }
-            Text("Für eine veröffentlichte App muss die Capability ‚Sign in with Apple‘ im Apple-Developer-Projekt aktiviert sein.")
+            Text("Name und Anmeldung bleiben auf diesem Gerät. Die App hat keinen eigenen Server.")
                 .font(.footnote)
                 .foregroundStyle(.secondary)
         }
@@ -89,14 +98,18 @@ struct SettingsView: View {
                 }
             }
 
-            Toggle("Tägliche Push-Erinnerung", isOn: Binding(
+            Toggle("Tägliche Lernerinnerung", isOn: Binding(
                 get: { settings.dailyReminderEnabled },
                 set: { enabled in
                     settings.dailyReminderEnabled = enabled
                     Task {
                         if enabled {
-                            do { try await AppleIntegrationService.shared.scheduleDailyLearningReminder(hour: settings.dailyReminderHour) }
-                            catch { statusMessage = error.localizedDescription }
+                            do {
+                                try await AppleIntegrationService.shared.scheduleDailyLearningReminder(hour: settings.dailyReminderHour)
+                            } catch {
+                                settings.dailyReminderEnabled = false
+                                statusMessage = error.localizedDescription
+                            }
                         } else {
                             AppleIntegrationService.shared.removeDailyLearningReminder()
                         }
@@ -149,9 +162,16 @@ struct SettingsView: View {
     }
 
     private var aboutSection: some View {
-        Section("Weitere sinnvolle Funktionen") {
+        Section("Lernen") {
             NavigationLink("25-Minuten-Fokus-Timer") { FocusTimerView() }
             NavigationLink("Persönliche Lernempfehlung") { SmartStudyView() }
+            LabeledContent(
+                "Version",
+                value: Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0"
+            )
+            Text("Unabhängiger Lerntrainer für die Fortbildungsprüfung zum Technischen Fachwirt. Keine offizielle App der IHK.")
+                .font(.footnote)
+                .foregroundStyle(.secondary)
         }
     }
 

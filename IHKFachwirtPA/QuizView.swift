@@ -53,8 +53,12 @@ struct QuizView: View {
             }
 
             Section {
-                Button("10 Fragen starten") { startQuiz(count: 10) }
-                    .frame(maxWidth: .infinity)
+                let available = store.questions(topicID: selectedTopicID).count
+                Button(available == 0 ? "Keine Fragen vorhanden" : "\(min(10, available)) Fragen starten") {
+                    startQuiz(count: 10)
+                }
+                .disabled(available == 0)
+                .frame(maxWidth: .infinity)
             }
         }
     }
@@ -165,7 +169,9 @@ struct QuizView: View {
 
     private func startQuiz(count: Int) {
         let pool = store.questions(topicID: selectedTopicID).shuffled()
-        sessionQuestions = Array(pool.prefix(min(count, pool.count)))
+        let picked = Array(pool.prefix(min(count, pool.count)))
+        guard !picked.isEmpty else { return }
+        sessionQuestions = picked
         index = 0
         selected = nil
         answered = false

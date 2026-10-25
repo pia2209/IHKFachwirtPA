@@ -27,6 +27,8 @@ struct ExamView: View {
         }
         .navigationTitle("Prüfung")
         .navigationBarTitleDisplayMode(.inline)
+        .onAppear(perform: clampQuestionCount)
+        .onChange(of: selectedPart) { _, _ in clampQuestionCount() }
         .onReceive(timer) { _ in
             guard started, result == nil else { return }
             if secondsRemaining > 0 { secondsRemaining -= 1 } else { finishExam() }
@@ -46,9 +48,9 @@ struct ExamView: View {
 
             Section("Simulation") {
                 Picker("Fragen", selection: $questionCount) {
-                    Text("20").tag(20)
-                    Text("40").tag(40)
-                    Text("60").tag(60)
+                    ForEach(countOptions, id: \.self) { count in
+                        Text("\(count)").tag(count)
+                    }
                 }
                 Picker("Zeit", selection: $duration) {
                     Text("30 Minuten").tag(30)
@@ -190,6 +192,28 @@ struct ExamView: View {
         }
     }
 
+    private var availableQuestionCount: Int {
+        let allowedTopicIDs: Set<String>
+        if let selectedPart {
+            allowedTopicIDs = Set(store.topics.filter { $0.part == selectedPart }.map(\.id))
+        } else {
+            allowedTopicIDs = Set(store.topics.map(\.id))
+        }
+        return store.quizQuestions.filter { allowedTopicIDs.contains($0.topicID) }.count
+    }
+
+    private var countOptions: [Int] {
+        let pool = availableQuestionCount
+        guard pool > 0 else { return [20] }
+        let presets = [20, 40, 60].filter { $0 < pool }
+        return presets + [pool]
+    }
+
+    private func clampQuestionCount() {
+        guard let fallback = countOptions.last, !countOptions.contains(questionCount) else { return }
+        questionCount = fallback
+    }
+
     private var timeString: String {
         String(format: "%02d:%02d", secondsRemaining / 60, secondsRemaining % 60)
     }
@@ -203,7 +227,9 @@ struct ExamView: View {
         }
 
         let pool = store.quizQuestions.filter { allowedTopicIDs.contains($0.topicID) }
+        guard !pool.isEmpty else { return }
         questions = balancedQuestions(from: pool, count: min(questionCount, pool.count))
+        guard !questions.isEmpty else { return }
         answers = [:]
         index = 0
         secondsRemaining = duration * 60
@@ -240,7 +266,8 @@ struct ExamView: View {
                 store.registerQuizAnswer(question: question, correct: isCorrect)
             }
         }
-        store.finishSession(answered: questions.count, correct: correct)
+        let given = questions.filter { answers[$0.id] != nil }.count
+        store.finishSession(answered: given, correct: correct)
 
         let sectionResults = makeSectionResults()
         result = IHKExamResult(sections: sectionResults, durationSeconds: duration * 60 - secondsRemaining)

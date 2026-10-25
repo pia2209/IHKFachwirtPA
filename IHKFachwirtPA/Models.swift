@@ -110,6 +110,16 @@ struct LearningSnapshot: Codable {
     var topicProgress: [String: TopicProgress]
     var sessions: [StudySession]
     var examDate: Date?
+    var favoriteQuestionIDs: [String]
+    var wrongQuestionIDs: [String]
+}
+
+struct Achievement: Identifiable, Hashable {
+    let id: String
+    let title: String
+    let subtitle: String
+    let icon: String
+    let unlocked: Bool
 }
 
 struct ExamResult: Identifiable {
