@@ -36,6 +36,7 @@ struct HomeView: View {
         }
         .sheet(isPresented: $showLearningPlan) {
             LearningPlanSettingsView()
+                .environment(store)
         }
     }
 

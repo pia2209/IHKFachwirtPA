@@ -44,8 +44,12 @@ struct CalculationView: View {
                 Label("Lösungsweg nach der Abgabe", systemImage: "list.number")
             }
             Section {
-                Button("10 Rechenaufgaben starten") { start() }
-                    .frame(maxWidth: .infinity)
+                let available = store.calculationQuestions.filter { selectedTopicID == nil || $0.topicID == selectedTopicID }.count
+                Button(available == 0 ? "Keine Aufgaben vorhanden" : "\(min(10, available)) Rechenaufgaben starten") {
+                    start()
+                }
+                .disabled(available == 0)
+                .frame(maxWidth: .infinity)
             }
         }
     }
@@ -135,7 +139,11 @@ struct CalculationView: View {
     }
 
     private var parsedInput: Double? {
-        Double(input.replacingOccurrences(of: ",", with: "."))
+        var text = input.trimmingCharacters(in: .whitespacesAndNewlines)
+            .replacingOccurrences(of: ",", with: ".")
+        if text.hasSuffix(".") { text.removeLast() }
+        guard !text.isEmpty else { return nil }
+        return Double(text)
     }
 
     private func start() {

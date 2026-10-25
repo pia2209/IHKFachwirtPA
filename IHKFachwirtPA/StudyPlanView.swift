@@ -6,7 +6,7 @@ struct StudyPlanView: View {
     var body: some View {
         List {
             Section("Heute") {
-                planRow("Fällige Karteikarten", detail: "\\(store.dueFlashcards.count) Karten", icon: "rectangle.stack")
+                planRow("Fällige Karteikarten", detail: "\(store.dueFlashcards.count) Karten", icon: "rectangle.stack")
                 planRow("Quizblock", detail: "10 Fragen", icon: "checkmark.circle")
                 if let weak = store.weakestTopics.first {
                     planRow("Schwerpunkt", detail: weak.title, icon: "scope")

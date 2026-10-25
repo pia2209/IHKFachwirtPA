@@ -120,9 +120,13 @@ struct FlashcardView: View {
     }
 
     private func rate(_ knewIt: Bool, card: Flashcard) {
-        store.updateMastery(cardID: card.id, knewIt: knewIt)
-        index += 1
+        let cardID = card.id
+        store.updateMastery(cardID: cardID, knewIt: knewIt)
         showAnswer = false
+        if cards.contains(where: { $0.id == cardID }) {
+            index += 1
+        }
+        if cards.isEmpty { index = 0 }
     }
 
     private func resetPosition() {

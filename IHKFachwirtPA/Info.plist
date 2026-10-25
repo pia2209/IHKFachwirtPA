@@ -2,9 +2,21 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>UIBackgroundModes</key>
-	<array>
-		<string>remote-notification</string>
-	</array>
+	<key>CFBundleDisplayName</key>
+	<string>Fachwirt Trainer</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
+	<key>LSApplicationCategoryType</key>
+	<string>public.app-category.education</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>Face ID oder der Gerätecode schützt deinen lokal gespeicherten Lernfortschritt, wenn du die App-Sperre aktivierst.</string>
+	<key>NSCalendarsFullAccessUsageDescription</key>
+	<string>Der Prüfungstermin wird nur nach deiner Bestätigung in deinen Kalender eingetragen.</string>
+	<key>NSCalendarsUsageDescription</key>
+	<string>Der Prüfungstermin wird nur nach deiner Bestätigung in deinen Kalender eingetragen.</string>
+	<key>NSRemindersFullAccessUsageDescription</key>
+	<string>Lernblöcke werden nur nach deiner Bestätigung als Erinnerungen angelegt.</string>
+	<key>NSRemindersUsageDescription</key>
+	<string>Lernblöcke werden nur nach deiner Bestätigung als Erinnerungen angelegt.</string>
 </dict>
 </plist>

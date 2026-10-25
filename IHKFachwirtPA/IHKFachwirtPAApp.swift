@@ -1,21 +1,22 @@
-//
-//  IHKFachwirtPAApp.swift
-//  IHKFachwirtPA
-//
-//  Created by Pia Adibelli on 25.10.26.
-//
-
 import SwiftUI
-import CoreData
 
 @main
 struct IHKFachwirtPAApp: App {
-    let persistenceController = PersistenceController.shared
+    @Environment(\.scenePhase) private var scenePhase
+    @State private var learningStore = LearningStore()
+    @State private var settings = AppSettingsStore()
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
-                .environment(\.managedObjectContext, persistenceController.container.viewContext)
+            AppLockView()
+                .environment(learningStore)
+                .environment(settings)
+                .task { settings.refreshAppleCredentialState() }
+        }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active {
+                learningStore.rollDayIfNeeded()
+            }
         }
     }
 }
